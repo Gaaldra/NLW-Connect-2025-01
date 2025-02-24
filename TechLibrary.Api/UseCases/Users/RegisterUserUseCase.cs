@@ -1,6 +1,8 @@
 ﻿using FluentValidation.Results;
 using TechLibrary.Api.Domain.Entities;
-using TechLibrary.Api.Infraestructures;
+using TechLibrary.Api.Infraestructure.DataAccess;
+using TechLibrary.Api.Infraestructure.Security.Criptography;
+using TechLibrary.Api.Infraestructure.Security.Tokens.Access;
 using TechLibrary.Communication.Requests;
 using TechLibrary.Communication.Responses;
 using TechLibrary.Exception;
@@ -11,31 +13,34 @@ public class RegisterUserUseCase
 {
     public ResponseUserJson Execute(RequestUserJson request)
     {
-        Validate(request);
+        TechLibraryDbContext dbContext = new();
+
+        Validate(request, dbContext);
 
         User entity = new()
         {
             Name = request.Name,
             Email = request.Email,
-            Password = request.Password,
+            Password = BCryptAlgorithm.HashPassword(request.Password),
         };
-
-        TechLibraryDbContext dbContext = new();
-
+        
         dbContext.Users.Add(entity);
         dbContext.SaveChanges();
 
         return new ResponseUserJson()
         {
-            Name = entity.Name
+            Name = entity.Name,
+            AccessToken = AccessTokenGenerator.Generate(entity)
         };
     }
 
-    private static void Validate(RequestUserJson request)
+    private static void Validate(RequestUserJson request, TechLibraryDbContext dbContext)
     {
         RegisterUserValidator validator = new();
 
         ValidationResult result = validator.Validate(request);
+
+        if (dbContext.Users.Any(user => user.Email.Equals(request.Email))) result.Errors.Add(new ValidationFailure("Email", "E-mail já cadastrado no sistema"));
 
         if (!result.IsValid)
         {

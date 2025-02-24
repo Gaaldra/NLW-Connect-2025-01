@@ -1,27 +1,25 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using TechLibrary.Api.UseCases.Users;
+using TechLibrary.Api.UseCases.Login.DoLogin;
 using TechLibrary.Communication.Requests;
 using TechLibrary.Communication.Responses;
-using TechLibrary.Exception;
 
 namespace TechLibrary.Api.Controllers;
 
 [Route("[controller]")]
 [ApiController]
-public class UsersController : ControllerBase
+public class LoginController : ControllerBase
 {
     [HttpPost]
     [ProducesResponseType(typeof(ResponseUserJson), StatusCodes.Status201Created)]
-    [ProducesResponseType(typeof(ResponseErrorMessagesJson), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ResponseErrorMessagesJson), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(ResponseErrorMessagesJson), StatusCodes.Status500InternalServerError)]
     [Produces("application/json")]
-    public IActionResult Create([FromBody] RequestUserJson request)
+    public IActionResult DoLogin([FromBody] RequestLoginJson request)
     {
-        RegisterUserUseCase user = new();
+        DoLoginUseCase useCase = new();
 
-        ResponseUserJson response = user.Execute(request);
+        ResponseUserJson response = useCase.Execute(request);
 
-        return Created(string.Empty, response);
+        return Ok(response);
     }
 }
-
