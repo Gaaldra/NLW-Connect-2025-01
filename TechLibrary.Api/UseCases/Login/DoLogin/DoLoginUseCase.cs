@@ -16,7 +16,7 @@ public class DoLoginUseCase
 
         User entity = dbContext.Users.FirstOrDefault(user => user.Email.Equals(request.Email)) ?? throw new InvalidLoginException();
 
-        if (BCryptAlgorithm.VerifyPassword(request.Password, entity.Password)) throw new InvalidLoginException();
+        if (!BCryptAlgorithm.VerifyPassword(request.Password, entity.Password)) throw new InvalidLoginException();
 
         return new ResponseUserJson
         {

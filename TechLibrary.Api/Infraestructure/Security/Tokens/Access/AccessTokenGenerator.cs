@@ -10,10 +10,10 @@ public class AccessTokenGenerator
 {
     public static string Generate(User user)
     {
-        List<Claim> claims = new()
-        {
+        List<Claim> claims =
+        [
             new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString())
-        };
+        ];
 
         SecurityTokenDescriptor descriptor = new()
         {
@@ -31,7 +31,7 @@ public class AccessTokenGenerator
 
     private static SymmetricSecurityKey SecurityKey()
     {
-        string signingKey = "xTlBerQ0Bc88bcbrSxuqvPTAX5aBsMx3";
+        string signingKey = Environment.GetEnvironmentVariable("JWT_KEY")!.ToString();
 
         byte[] symmetricKey = Encoding.UTF8.GetBytes(signingKey);
 
